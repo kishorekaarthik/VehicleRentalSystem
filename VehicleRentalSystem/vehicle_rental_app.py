@@ -14,7 +14,6 @@ users_collection = db["users"]
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", ["Sign Up", "Login", "Admin", "Client", "Available Vehicles", "Checkout"])
 
-# Define the admin key (in a real application, store this securely)
 ADMIN_KEY = "admin123"
 
 def create_user(username, password, name, address, phone, license_no):
@@ -151,11 +150,15 @@ def client_page():
     # Return a Vehicle
     st.header("Return a Vehicle")
     vehicle_to_return = st.text_input("Enter Vehicle ID to Return")
+    review = st.slider("Rate your experience (1-5 stars)", 1, 5, 5)
     if st.button("Return Vehicle"):
         result = vehicles_collection.update_one({"id": vehicle_to_return, "rented": True}, {"$set": {"rented": False}})
         if result.modified_count > 0:
-            rentals_collection.update_one({"vehicle_id": vehicle_to_return, "rental_status": "rented"}, {"$set": {"rental_status": "returned"}})
-            st.success(f"Vehicle {vehicle_to_return} returned successfully!")
+            rentals_collection.update_one(
+                {"vehicle_id": vehicle_to_return, "rental_status": "rented"},
+                {"$set": {"rental_status": "returned", "review": review}}
+            )
+            st.success(f"Vehicle {vehicle_to_return} returned successfully with a review of {review} stars!")
         else:
             st.warning("Invalid vehicle ID or vehicle not rented.")
 
